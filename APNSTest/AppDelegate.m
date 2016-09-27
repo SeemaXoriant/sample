@@ -16,7 +16,29 @@
 
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
-    // Override point for customization after application launch.
+    
+    
+    
+    
+    
+    if ([application respondsToSelector:@selector(registerUserNotificationSettings:)]) {
+#ifdef __IPHONE_8_0
+        UIUserNotificationSettings *settings = [UIUserNotificationSettings settingsForTypes:(UIUserNotificationTypeBadge
+                                                                                             |UIUserNotificationTypeSound
+                                                                                             |UIUserNotificationTypeAlert) categories:nil];
+        [application registerUserNotificationSettings:settings];
+        [application registerForRemoteNotifications];
+#endif
+    } else {
+        UIRemoteNotificationType myTypes = UIRemoteNotificationTypeBadge | UIRemoteNotificationTypeAlert | UIRemoteNotificationTypeSound;
+        [application registerForRemoteNotificationTypes:myTypes];
+    }
+    
+    
+    
+    
+    [UIApplication sharedApplication].applicationIconBadgeNumber = 0;
+    
     return YES;
 }
 
@@ -42,4 +64,40 @@
     // Called when the application is about to terminate. Save data if appropriate. See also applicationDidEnterBackground:.
 }
 
+
+
+#pragma mark - Notification
+
+- (void)application:(UIApplication *)app didRegisterForRemoteNotificationsWithDeviceToken:(NSData *)devToken {
+    
+    NSString *deviceTokenString = [NSString stringWithFormat:@"%@",devToken];
+    
+    deviceTokenString = [deviceTokenString stringByTrimmingCharactersInSet:[NSCharacterSet characterSetWithCharactersInString:@"<>"]];
+    deviceTokenString = [deviceTokenString stringByReplacingOccurrencesOfString:@" " withString:@""];
+    
+    NSLog(@"device:%@",deviceTokenString);
+//    
+//    NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
+//    NSDictionary *regiCredentials = [NSDictionary dictionaryWithObjectsAndKeys:deviceTokenString,@"deviceToken", nil];
+//    [userDefaults setObject:regiCredentials forKey:@"Register"];
+//    [userDefaults synchronize];
+}
+
+- (void)application:(UIApplication *)app didFailToRegisterForRemoteNotificationsWithError:(NSError *)err {
+    NSLog(@"device in fail:%@",[err description]);
+
+//    NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
+//    NSDictionary *regiCredentials = [NSDictionary dictionaryWithObjectsAndKeys:@"",@"deviceToken", nil];
+//    [userDefaults removeObjectForKey:@"Register"];
+//    [userDefaults setObject:regiCredentials forKey:@"Register"];
+//    [userDefaults synchronize];
+}
+
+#pragma mark - Notification Handling
+-(void)application:(UIApplication *)app didReceiveRemoteNotification:(NSDictionary *)userInfo{
+    NSLog(@"userInfo:%@",[userInfo description]);
+    
+    [[[UIAlertView alloc] initWithTitle:@"Notification" message:[NSString stringWithFormat:@"%@",[userInfo description]] delegate:nil cancelButtonTitle:@"OK" otherButtonTitles: nil] show];
+    //{"aps":{"alert":"My first push notification!","sound":"default/Users/patil_s/Seema/Demo/APNSTest/APNSTest/AppDelegate.m","badge":4}}
+}
 @end
